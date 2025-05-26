@@ -5,16 +5,16 @@ const t = window.enmity.modules.common.React;
 const S = window.enmity.modules.common.Linking;
 const b = window.enmity.modules.common.StyleSheet;
 
-const a = "DesktopSpoofer";
+const a = "NSFWAccessEnabler";
 const l = "1.0.0";
-const F = "Spoofs iPad Discord client as desktop.";
+const F = "Enables access to age-restricted servers on iOS via desktop toggle.";
 const T = [{ name: "SerStars", id: "861631850681729045" }];
 const E = "#000001";
 const R = { name: a, version: l, description: F, authors: T, color: E };
 
-const u = g("DesktopSpoofer");
+const u = g("NSFWAccessEnabler");
 
-const DesktopSpoofer = ({ settings }) => {
+const NSFWAccessEnabler = ({ settings }) => {
   const styles = b.createThemedStyleSheet({
     footer: {
       color: y.ThemeColorMap.HEADER_SECONDARY,
@@ -33,13 +33,13 @@ const DesktopSpoofer = ({ settings }) => {
       t.createElement(
         window.enmity.components.FormRow,
         {
-          label: "Enable Desktop Spoof",
-          subLabel: "Make Discord think you're on desktop",
+          label: "Enable NSFW Access",
+          subLabel: "Prompts to enable NSFW access on desktop",
           trailing: t.createElement(
             window.enmity.components.FormSwitch,
             {
-              value: settings.getBoolean("spoofDesktop", true),
-              onValueChange: n => settings.set("spoofDesktop", n)
+              value: settings.getBoolean("enableNSFW", true),
+              onValueChange: n => settings.set("enableNSFW", n)
             }
           )
         }
@@ -51,9 +51,9 @@ const DesktopSpoofer = ({ settings }) => {
       t.createElement(
         window.enmity.components.FormRow,
         {
-          label: "Check Source Code",
+          label: "Enable NSFW on Desktop",
           trailing: window.enmity.components.FormRow.Arrow,
-          onPress: () => S.openURL("https://raw.githubusercontent.com/Okamikiller2/Gs/refs/heads/main/DesktopSpoof.js")
+          onPress: () => S.openURL("https://support.discord.com/hc/en-us/articles/1500005292701")
         }
       )
     ),
@@ -68,24 +68,14 @@ const DesktopSpoofer = ({ settings }) => {
 h({
   ...R,
   onStart() {
-    const spoof = () => ({
-      platform: "desktop",
-      os: navigator.userAgent.includes("Mac") ? "macOS" : "Windows"
-    });
-
-    u.instead(window, "navigator", () => ({
-      ...navigator,
-      userAgent: navigator.userAgent.replace(/iPad/i, "Desktop"),
-      platform: spoof().platform,
-      os: spoof().os
-    }));
-
-    u.after(window.enmity.modules.common, "getPlatform", () => "desktop");
+    if (settings.getBoolean("enableNSFW", true)) {
+      S.openURL("https://support.discord.com/hc/en-us/articles/1500005292701");
+    }
   },
   onStop() {
     u.unpatchAll();
   },
   getSettingsPanel({ settings }) {
-    return t.createElement(DesktopSpoofer, { settings });
+    return t.createElement(NSFWAccessEnabler, { settings });
   }
 });
