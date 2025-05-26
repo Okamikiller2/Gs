@@ -1,42 +1,91 @@
-function h(o) { window.enmity.plugins.registerPlugin(o) }
-function g(o) { return window.enmity.patcher.create(o) }
+function h(o) { window.enmity.plugins.registerPlugin(o); }
+function g(o) { return window.enmity.patcher.create(o); }
+const y = window.enmity.modules.common.Constants;
 const t = window.enmity.modules.common.React;
-const f = window.enmity.assets.getIDByName;
-const P = t.Form, a = t.FormRow;
+const S = window.enmity.modules.common.Linking;
+const b = window.enmity.modules.common.StyleSheet;
 
-const r = {
-  name: "DesktopSpoof",
-  version: "1.0.0",
-  description: "Spoofs Discord into thinking you're on a desktop client",
-  authors: [{ name: "Oliver", id: "738291045672984576" }]
+const a = "DesktopSpoofer";
+const l = "1.0.0";
+const F = "Spoofs iPad Discord client as desktop.";
+const T = [{ name: "SerStars", id: "861631850681729045" }];
+const E = "#000001";
+const R = { name: a, version: l, description: F, authors: T, color: E };
+
+const u = g("DesktopSpoofer");
+
+const DesktopSpoofer = ({ settings }) => {
+  const styles = b.createThemedStyleSheet({
+    footer: {
+      color: y.ThemeColorMap.HEADER_SECONDARY,
+      textAlign: "center",
+      paddingTop: 10,
+      paddingBottom: 20
+    }
+  });
+
+  return t.createElement(
+    window.enmity.components.ScrollView,
+    null,
+    t.createElement(
+      window.enmity.components.FormSection,
+      { title: "SETTINGS" },
+      t.createElement(
+        window.enmity.components.FormRow,
+        {
+          label: "Enable Desktop Spoof",
+          subLabel: "Make Discord think you're on desktop",
+          trailing: t.createElement(
+            window.enmity.components.FormSwitch,
+            {
+              value: settings.getBoolean("spoofDesktop", true),
+              onValueChange: n => settings.set("spoofDesktop", n)
+            }
+          )
+        }
+      )
+    ),
+    t.createElement(
+      window.enmity.components.FormSection,
+      { title: "INFORMATION" },
+      t.createElement(
+        window.enmity.components.FormRow,
+        {
+          label: "Check Source Code",
+          trailing: window.enmity.components.FormRow.Arrow,
+          onPress: () => S.openURL("https://raw.githubusercontent.com/Okamikiller2/Gs/refs/heads/main/DesktopSpoof.js")
+        }
+      )
+    ),
+    t.createElement(
+      window.enmity.components.Text,
+      { style: styles.footer },
+      `v${l}`
+    )
+  );
 };
 
-const I = g("DesktopSpoof");
-
-const D = {
-  ...r,
+h({
+  ...R,
   onStart() {
-    I.after("identify", window.enmity.modules.getByProps("identify"), (_, [data]) => {
-      if (data?.properties) {
-        data.properties.$os = "Windows";
-        data.properties.$browser = "Discord";
-        data.properties.$device = "Desktop";
-      }
+    const spoof = () => ({
+      platform: "desktop",
+      os: navigator.userAgent.includes("Mac") ? "macOS" : "Windows"
     });
+
+    u.instead(window, "navigator", () => ({
+      ...navigator,
+      userAgent: navigator.userAgent.replace(/iPad/i, "Desktop"),
+      platform: spoof().platform,
+      os: spoof().os
+    }));
+
+    u.after(window.enmity.modules.common, "getPlatform", () => "desktop");
   },
   onStop() {
-    I.unpatchAll();
+    u.unpatchAll();
   },
-  getSettingsPanel() {
-    return t.createElement(
-      P, { title: "Desktop Spoof" },
-      t.createElement(a, {
-        label: "Status",
-        subLabel: "This plugin spoofs your client as desktop",
-        leading: t.createElement(a.Icon, { source: f("ic_sync_24px") })
-      })
-    );
+  getSettingsPanel({ settings }) {
+    return t.createElement(DesktopSpoofer, { settings });
   }
-};
-
-h(D);
+});
